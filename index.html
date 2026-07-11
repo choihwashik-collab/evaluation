@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>실시간 강의 반응 수집 시스템 (최종 완성본)</title>
+    <title>실시간 강의 반응 수집 시스템 (v5.1 - 정답 자동저장)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -13,11 +13,10 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
 
-    <!-- 강사 네비게이션 바 -->
     <header id="teacher-header" class="hidden bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-2">
-                <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded">강사 모드 (최종)</span>
+                <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded">강사 모드 (v5.1 자동저장)</span>
                 <span class="text-sm font-semibold text-slate-500">현재 세션: <span id="nav-session-num" class="text-indigo-600 font-bold">1</span>회차</span>
             </div>
             <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
@@ -33,7 +32,6 @@
 
     <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <!-- 1. [강사] QR 화면 -->
         <section id="view-teacher-qr" class="hidden space-y-8 text-center py-6">
             <div class="max-w-2xl mx-auto bg-white border-2 border-indigo-100 p-8 rounded-3xl shadow-xl space-y-6">
                 <div class="space-y-2">
@@ -48,7 +46,6 @@
                     <div class="bg-slate-100 text-slate-700 font-mono text-sm p-3 rounded-xl border border-slate-200 break-all select-all font-semibold" id="mega-url-display"></div>
                 </div>
                 
-                <!-- 직관적인 비밀번호 진입 버튼 -->
                 <div class="pt-6 border-t border-slate-100">
                     <button onclick="promptTeacherPassword()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 px-4 rounded-xl transition-all shadow-lg flex items-center justify-center space-x-2 text-lg">
                         <i class="fa-solid fa-lock text-amber-400"></i>
@@ -58,17 +55,15 @@
             </div>
         </section>
 
-        <!-- 2. [강사] 대시보드 화면 -->
         <section id="view-teacher-dashboard" class="hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- 설정 -->
                 <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-5 md:col-span-1">
                     <h3 class="text-md font-bold text-slate-900 border-b border-slate-100 pb-2.5 flex items-center">
                         <i class="fa-solid fa-sliders text-indigo-500 mr-2"></i>운영 설정
                     </h3>
                     
                     <div class="space-y-2">
-                        <label class="block text-xs font-bold text-slate-600">문항 수 조절</label>
+                        <label class="block text-xs font-bold text-slate-600">문항 수 조절 (자동 저장됨)</label>
                         <div class="flex items-center space-x-2">
                             <button onclick="adjustQuestionCount(-1)" class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-lg flex items-center justify-center font-bold">-</button>
                             <input type="number" id="config-q-count" value="25" class="w-16 text-center font-bold border border-slate-300 py-2 rounded-lg bg-slate-50" readonly>
@@ -85,7 +80,6 @@
                     </div>
                 </div>
 
-                <!-- 정답 설정 -->
                 <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm md:col-span-2 flex flex-col justify-between">
                     <div class="space-y-4">
                         <h3 class="text-md font-bold text-slate-900 border-b border-slate-100 pb-2.5">
@@ -119,7 +113,6 @@
                 </div>
             </div>
 
-            <!-- [결과창] -->
             <div id="comparison-results-section" class="hidden bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-3 gap-2">
                     <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-table-list text-emerald-500 mr-2"></i>종합 정답률 비교 데이터 뷰</h3>
@@ -136,7 +129,6 @@
                     </div>
                 </div>
 
-                <!-- 비교 표 출력 영역 -->
                 <div class="overflow-x-auto border border-slate-200 rounded-xl">
                     <table class="w-full text-xs text-left border-collapse text-center">
                         <thead class="bg-slate-100 font-bold border-b border-slate-200">
@@ -153,7 +145,6 @@
         </section>
 
 
-        <!-- 3. [학생] 입력 화면 -->
         <section id="view-student" class="space-y-6">
             <div id="student-login-card" class="bg-white border border-slate-200 p-8 rounded-3xl shadow-sm max-w-md mx-auto">
                 <div class="text-center mb-6">
@@ -221,7 +212,7 @@
     </main>
 
     <script>
-        // 선생님의 구글 스프레드시트 URL 고정 세팅 완료
+        // 선생님의 구글 스프레드시트 URL 고정 세팅
         const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbw7q5Kc-bm8Fq-EpK3NqRt420qk6JR4qjRIu_C7GGwZ6rjBeh_GcIWZi3yiWDwTjD_QLg/exec";
 
         let appState = {
@@ -232,22 +223,41 @@
 
         let fetchedGroupsData = {}; 
 
+        // [중요] 강사가 입력한 데이터를 컴퓨터에 영구 저장하는 함수
+        function saveToCache() {
+            localStorage.setItem('LECTURE_APP_V5_STATE', JSON.stringify({
+                session1: appState.session1,
+                session2: appState.session2,
+                questionCount: appState.questionCount
+            }));
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('mode') === 'teacher') appState.isTeacherMode = true;
 
-            // [핵심 변경사항] URL 파라미터에서 session 번호를 감지하여 학생 화면의 세션을 자동으로 맞춰줍니다.
             const sessionParam = urlParams.get('session');
             if (sessionParam) {
                 appState.session = parseInt(sessionParam);
                 document.getElementById('student-login-session-text').innerText = `현재 ${appState.session}회차 질문 접속됨`;
             }
 
+            // [중요] 컴퓨터에 저장된 정답 데이터가 있으면 불러오기
+            const cached = localStorage.getItem('LECTURE_APP_V5_STATE');
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    appState.session1 = parsed.session1 || appState.session1;
+                    appState.session2 = parsed.session2 || appState.session2;
+                    appState.questionCount = parsed.questionCount || 25;
+                    document.getElementById('config-q-count').value = appState.questionCount;
+                } catch(e) { console.error(e); }
+            }
+
             updateQRCodeDisplay();
             initRoleRoutingView();
         });
 
-        // [핵심 변경사항] 세션이 바뀔 때마다 QR 코드의 연결 주소를 다르게(1회차, 2회차) 생성합니다.
         function updateQRCodeDisplay() {
             const cleanUrl = window.location.origin + window.location.pathname + "?session=" + appState.session;
             document.getElementById('mega-url-display').innerText = cleanUrl;
@@ -285,7 +295,7 @@
         }
 
         function promptTeacherPassword() {
-            const pw = prompt("대시보드 관리자 비밀번호를 입력해 주세요.\n(기본 비밀번호: 1234)");
+            const pw = prompt("대시보드 관리자 비밀번호를 입력해 주세요.\\n(기본 비밀번호: 1234)");
             if (pw === "1234") {
                 switchTeacherSubView('dash');
             } else if (pw !== null) {
@@ -299,6 +309,8 @@
             if (currentVal > 100) currentVal = 100;
             appState.questionCount = currentVal;
             document.getElementById('config-q-count').value = currentVal;
+            
+            saveToCache(); // 문항 수 변경 시 저장
             refreshDynamicTableForms();
         }
 
@@ -345,19 +357,22 @@
         function updateTeacherRateElement(qNum, value) {
             const sessionKey = 'session' + appState.session;
             appState[sessionKey].actualRates[qNum] = value !== '' ? parseFloat(value) : null;
+            
+            saveToCache(); // 실제 정답률 입력 시마다 즉시 저장
         }
 
         document.getElementById('teacher-actual-avg').addEventListener('input', (e) => {
             appState['session' + appState.session].actualAvg = e.target.value !== '' ? parseFloat(e.target.value) : null;
+            
+            saveToCache(); // 전체 평균 점수 입력 시마다 즉시 저장
         });
 
-        // [핵심 변경사항] 대시보드에서 세션을 바꾸면, QR 코드도 그 회차에 맞게 자동으로 다시 그려집니다.
         function changeSession(sNum) {
             appState.session = sNum;
             document.getElementById('btn-sess-1').className = sNum === 1 ? "py-2 text-xs font-bold border rounded-lg border-indigo-600 bg-indigo-50 text-indigo-700" : "py-2 text-xs font-bold border rounded-lg border-slate-200 text-slate-600";
             document.getElementById('btn-sess-2').className = sNum === 2 ? "py-2 text-xs font-bold border rounded-lg border-indigo-600 bg-indigo-50 text-indigo-700" : "py-2 text-xs font-bold border rounded-lg border-slate-200 text-slate-600";
             
-            updateQRCodeDisplay(); // 회차 변경 시 QR 코드 즉각 갱신
+            updateQRCodeDisplay(); 
             loadTeacherDashboardDataInputs();
             document.getElementById('comparison-results-section').classList.add('hidden');
         }
