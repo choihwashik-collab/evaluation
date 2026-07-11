@@ -3,36 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>실시간 강의 반응 수집 시스템 - 현장 최적화 버전(v4.0)</title>
-    <!-- Tailwind CSS 및 FontAwesome 로드 -->
+    <title>실시간 강의 반응 수집 시스템 (v5.0)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap');
         body { font-family: 'Pretendard', sans-serif; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
 
-    <!-- ============================================== -->
-    <!-- [A] 강사 전용 상단 네비게이션 바 (일반 학생 접속 시 아예 렌더링 안 됨) -->
-    <!-- ============================================== -->
+    <!-- 강사 네비게이션 바 -->
     <header id="teacher-header" class="hidden bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-2">
-                <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded">강사 전용 모드(v4.0)</span>
-                <span class="text-sm font-semibold text-slate-500">질문 세션: <span id="nav-session-num" class="text-indigo-600 font-bold">1</span>회차</span>
+                <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded">강사 모드 (v5.0)</span>
+                <span class="text-sm font-semibold text-slate-500">현재 세션: <span id="nav-session-num" class="text-indigo-600 font-bold">1</span>회차</span>
             </div>
-            
-            <!-- 강사 뷰 제어 탭 (QR안내화면 vs 대시보드제어) -->
             <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-                <button id="tab-qr" onclick="switchTeacherSubView('qr')" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm">
-                    <i class="fa-solid fa-screen-users mr-1.5"></i>1. 빔프로젝터 QR 안내판
+                <button id="tab-qr" onclick="switchTeacherSubView('qr')" class="px-4 py-2 text-sm font-bold rounded-lg bg-white text-indigo-600 shadow-sm">
+                    <i class="fa-solid fa-qrcode mr-1.5"></i>QR 띄우기
                 </button>
-                <button id="tab-dash" onclick="switchTeacherSubView('dash')" class="px-4 py-1.5 text-xs font-bold rounded-lg text-slate-600 ml-1">
-                    <i class="fa-solid fa-chart-line-up mr-1.5"></i>2. 실시간 결과 대시보드
+                <button id="tab-dash" onclick="switchTeacherSubView('dash')" class="px-4 py-2 text-sm font-bold rounded-lg text-slate-600 ml-1">
+                    <i class="fa-solid fa-chart-bar mr-1.5"></i>결과 대시보드
                 </button>
             </div>
         </div>
@@ -40,88 +33,69 @@
 
     <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <!-- ============================================== -->
-        <!-- 1. [강사 첫화면] 대형 QR코드 빔프로젝터 안내판 (초기 강사모드 진입시 자동 표출) -->
-        <!-- ============================================== -->
+        <!-- 1. [강사] QR 화면 -->
         <section id="view-teacher-qr" class="hidden space-y-8 text-center py-6">
             <div class="max-w-2xl mx-auto bg-white border-2 border-indigo-100 p-8 rounded-3xl shadow-xl space-y-6">
                 <div class="space-y-2">
-                    <span class="bg-indigo-100 text-indigo-700 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">Interactive Lecture</span>
                     <h2 class="text-3xl font-black text-slate-900 tracking-tight">스마트폰으로 QR 코드를 스캔하세요!</h2>
-                    <p class="text-slate-500 text-base">카메라 앱을 켜고 아래 QR코드를 비추면 조별 입력창으로 연결됩니다.</p>
                 </div>
-
-                <!-- 메가 사이즈 QR 코드 판넬 -->
                 <div class="bg-slate-50 p-6 border border-slate-100 rounded-2xl inline-block mx-auto shadow-inner">
                     <img id="mega-qr-code-img" src="" alt="접속 QR코드" class="w-64 h-64 mx-auto bg-white border-2 border-slate-200 p-2 rounded-xl shadow-sm">
                 </div>
-
-                <!-- 접속 주소 다이렉트 가이드 -->
                 <div class="space-y-2 max-w-md mx-auto">
                     <span class="text-xs font-bold text-slate-400 block uppercase">직접 입력 주소</span>
                     <div class="bg-slate-100 text-slate-700 font-mono text-sm p-3 rounded-xl border border-slate-200 break-all select-all font-semibold" id="mega-url-display"></div>
                 </div>
-            </div>
-
-            <!-- 대시보드 진입 비밀 보안 장치 -->
-            <div class="pt-4">
-                <button onclick="promptTeacherPassword()" class="text-xs text-slate-400 hover:text-indigo-500 font-medium transition-colors">
-                    <i class="fa-solid fa-lock-keyhole mr-1"></i> 관리자 대시보드(설정/결과) 진입하기
-                </button>
+                
+                <!-- 직관적인 비밀번호 진입 버튼 -->
+                <div class="pt-6 border-t border-slate-100">
+                    <button onclick="promptTeacherPassword()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 px-4 rounded-xl transition-all shadow-lg flex items-center justify-center space-x-2 text-lg">
+                        <i class="fa-solid fa-lock text-amber-400"></i>
+                        <span>관리자 대시보드 진입 (결과 보기)</span>
+                    </button>
+                </div>
             </div>
         </section>
 
-
-        <!-- ============================================== -->
-        <!-- 2. [강사 대시보드] 비밀번호 인증 후 열리는 제어 및 결과창 -->
-        <!-- ============================================== -->
+        <!-- 2. [강사] 대시보드 화면 -->
         <section id="view-teacher-dashboard" class="hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- 설정 구역 -->
+                <!-- 설정 -->
                 <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-5 md:col-span-1">
                     <h3 class="text-md font-bold text-slate-900 border-b border-slate-100 pb-2.5 flex items-center">
-                        <i class="fa-solid fa-sliders text-indigo-500 mr-2"></i>문항 및 세션 제어
+                        <i class="fa-solid fa-sliders text-indigo-500 mr-2"></i>운영 설정
                     </h3>
                     
-                    <!-- 문항 수 칸 조절 버튼 스펙 -->
                     <div class="space-y-2">
-                        <label class="block text-xs font-bold text-slate-600">문항 개수 설정 (실시간 반영)</label>
+                        <label class="block text-xs font-bold text-slate-600">문항 수 조절</label>
                         <div class="flex items-center space-x-2">
-                            <button onclick="adjustQuestionCount(-1)" class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-lg flex items-center justify-center font-bold hover:bg-slate-200">-</button>
+                            <button onclick="adjustQuestionCount(-1)" class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-lg flex items-center justify-center font-bold">-</button>
                             <input type="number" id="config-q-count" value="25" class="w-16 text-center font-bold border border-slate-300 py-2 rounded-lg bg-slate-50" readonly>
-                            <button onclick="adjustQuestionCount(1)" class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-lg flex items-center justify-center font-bold hover:bg-slate-200">+</button>
+                            <button onclick="adjustQuestionCount(1)" class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-lg flex items-center justify-center font-bold">+</button>
                         </div>
                     </div>
 
-                    <!-- 질문 반복 세션 트리거 -->
                     <div class="space-y-2">
-                        <label class="block text-xs font-bold text-slate-600">질문 반복 회차 스위치</label>
+                        <label class="block text-xs font-bold text-slate-600">진행 회차 (결과도 회차별로 불러옵니다)</label>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <button id="btn-sess-1" onclick="changeSession(1)" class="py-2 text-xs font-bold border rounded-lg transition-all border-indigo-600 bg-indigo-50 text-indigo-700">1회차 질문</button>
-                            <button id="btn-sess-2" onclick="changeSession(2)" class="py-2 text-xs font-bold border rounded-lg transition-all border-slate-200 text-slate-600 hover:bg-slate-50">2회차 질문</button>
+                            <button id="btn-sess-1" onclick="changeSession(1)" class="py-2 text-xs font-bold border rounded-lg transition-all border-indigo-600 bg-indigo-50 text-indigo-700">1회차</button>
+                            <button id="btn-sess-2" onclick="changeSession(2)" class="py-2 text-xs font-bold border rounded-lg transition-all border-slate-200 text-slate-600">2회차</button>
                         </div>
-                    </div>
-
-                    <div class="space-y-1 pt-2 border-t border-slate-100">
-                        <label class="block text-[11px] font-bold text-slate-400">구글 시트 연동 URL (선택)</label>
-                        <input type="text" id="config-gas-url" placeholder="주소를 넣으면 시트 자동 연동" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-[11px]">
                     </div>
                 </div>
 
-                <!-- 강사 기준값 입력 구역 -->
+                <!-- 정답 설정 -->
                 <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm md:col-span-2 flex flex-col justify-between">
                     <div class="space-y-4">
-                        <h3 class="text-md font-bold text-slate-900 border-b border-slate-100 pb-2.5 flex items-center justify-between">
-                            <span><i class="fa-solid fa-key text-amber-500 mr-2"></i>강사용 기준 정답 데이터 사전 설정</span>
+                        <h3 class="text-md font-bold text-slate-900 border-b border-slate-100 pb-2.5">
+                            <i class="fa-solid fa-key text-amber-500 mr-2"></i>실제 정답 데이터 기준 설정
                         </h3>
                         
-                        <!-- 실제 평균 점수 -->
                         <div class="bg-amber-50/60 border border-amber-200 p-3 rounded-xl flex items-center justify-between">
-                            <label class="text-sm font-bold text-slate-800">실제 전체 평균 점수 기준값</label>
-                            <input type="number" id="teacher-actual-avg" step="0.1" placeholder="예: 85.0" class="w-32 px-3 py-1.5 border border-slate-300 rounded-lg font-bold text-amber-800 text-center focus:outline-none focus:border-amber-500">
+                            <label class="text-sm font-bold text-slate-800">실제 전체 평균 점수</label>
+                            <input type="number" id="teacher-actual-avg" step="0.1" placeholder="85.0" class="w-32 px-3 py-1.5 border border-slate-300 rounded-lg font-bold text-amber-800 text-center">
                         </div>
 
-                        <!-- 세로 스크롤 정답 입력 표 -->
                         <div class="overflow-y-auto max-h-48 border border-slate-200 rounded-xl bg-slate-50">
                             <table class="w-full text-left border-collapse text-xs text-center">
                                 <thead class="bg-slate-200 sticky top-0 font-bold text-slate-600">
@@ -130,29 +104,24 @@
                                         <th class="p-2 w-1/2 border-b border-slate-300">실제 정답률 (%)</th>
                                     </tr>
                                 </thead>
-                                <tbody id="teacher-questions-table-body" class="divide-y divide-slate-200 bg-white font-medium">
-                                    <!-- JS 연동 -->
-                                </tbody>
+                                <tbody id="teacher-questions-table-body" class="divide-y divide-slate-200 bg-white font-medium"></tbody>
                             </table>
                         </div>
                     </div>
 
                     <div class="pt-4">
-                        <button onclick="renderComparisonResults()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow transition-all flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-square-poll-vertical"></i>
-                            <span>결과 보기 (샘들 점수와 실시간 비교 표 가동)</span>
+                        <button onclick="fetchAndRenderComparison()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 text-lg">
+                            <i class="fa-solid fa-download"></i>
+                            <span>구글 시트에서 데이터 불러와서 비교표 보기</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- [결과창] 종합 세로 비교 분석 테이블 -->
+            <!-- [결과창] -->
             <div id="comparison-results-section" class="hidden bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-3 gap-2">
-                    <div>
-                        <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-table-list text-emerald-500 mr-2"></i>종합 정답률 비교 데이터 뷰 테이블</h3>
-                        <p class="text-[11px] text-slate-400 mt-0.5">오차 범위 15% 가 초과되면 붉은 격차 알림이 자동 빌드됩니다.</p>
-                    </div>
+                    <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-table-list text-emerald-500 mr-2"></i>종합 정답률 비교 데이터 뷰</h3>
                     <div class="flex items-center space-x-3 bg-slate-50 border p-2 rounded-xl text-xs">
                         <div>
                             <span class="text-slate-400 block font-bold">실제 평균</span>
@@ -160,105 +129,88 @@
                         </div>
                         <div class="border-l h-6"></div>
                         <div>
-                            <span class="text-slate-400 block font-bold">샘들 예측 평균</span>
+                            <span class="text-slate-400 block font-bold">제출 조 평균</span>
                             <span id="stat-groups-avg" class="font-black text-indigo-600 text-sm">-</span>
                         </div>
                     </div>
                 </div>
 
+                <!-- 비교 표 출력 영역 -->
                 <div class="overflow-x-auto border border-slate-200 rounded-xl">
                     <table class="w-full text-xs text-left border-collapse text-center">
                         <thead class="bg-slate-100 font-bold border-b border-slate-200">
                             <tr id="table-header-row">
                                 <th class="px-3 py-2.5 bg-slate-100 border-r sticky left-0">문항</th>
-                                <th class="px-3 py-2.5 bg-amber-100 text-amber-900 border-r">실제 정답률 (%)</th>
-                                <th class="px-3 py-2.5 bg-indigo-50 text-indigo-900 border-r">조별 평균 (%)</th>
+                                <th class="px-3 py-2.5 bg-amber-100 text-amber-900 border-r">실제 정답률</th>
+                                <th class="px-3 py-2.5 bg-indigo-50 text-indigo-900 border-r">조별 평균</th>
                             </tr>
                         </thead>
-                        <tbody id="table-body-rows" class="divide-y divide-slate-200 font-semibold bg-white">
-                            <!-- JS 매핑 -->
-                        </tbody>
+                        <tbody id="table-body-rows" class="divide-y divide-slate-200 font-semibold bg-white"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
 
-        <!-- ============================================== -->
-        <!-- 3. [학생 전용 화면] 조별 데이터 세로 입력 폼 (기본 화면) -->
-        <!-- ============================================== -->
+        <!-- 3. [학생] 입력 화면 -->
         <section id="view-student" class="space-y-6">
-            <!-- 3-1. 조이름 입력 전 로그인 창 -->
             <div id="student-login-card" class="bg-white border border-slate-200 p-8 rounded-3xl shadow-sm max-w-md mx-auto">
                 <div class="text-center mb-6">
-                    <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
-                        <i class="fa-solid fa-users text-2xl"></i>
+                    <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                        <i class="fa-solid fa-users text-3xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-900">우리 조 입력 시스템 접속</h3>
-                    <p class="text-xs text-slate-400 mt-1">지정된 조 이름을 적고 입장해 주세요.</p>
+                    <h3 class="text-2xl font-bold text-slate-900">조 이름 입력</h3>
                 </div>
                 <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">조 이름</label>
-                        <input type="text" id="student-group-name" placeholder="예: 02조 또는 2조" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 text-md font-bold text-center">
-                    </div>
-                    <button onclick="startGroupInput()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow flex items-center justify-center space-x-2 text-md">
-                        <span>접속 후 데이터 입력하기</span>
-                        <i class="fa-solid fa-angle-right"></i>
+                    <input type="text" id="student-group-name" placeholder="예: 3조" class="w-full px-4 py-4 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 text-xl font-bold text-center">
+                    <button onclick="startGroupInput()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-xl shadow flex items-center justify-center space-x-2 text-lg">
+                        <span>입력 시작하기</span>
                     </button>
                 </div>
             </div>
 
-            <!-- 3-2. 세로 표 형식 초대형 문항별 입력 레이아웃 -->
             <div id="student-input-form" class="hidden bg-white border border-slate-200 p-6 rounded-3xl shadow-md space-y-6">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3.5">
                     <div>
-                        <span id="active-group-badge" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wide">00조 입력 상태</span>
-                        <h3 id="student-session-indicator" class="text-xl font-black text-slate-900 mt-1">정답률 입력 표 (1회차)</h3>
+                        <span id="active-group-badge" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-black px-2.5 py-1 rounded-md uppercase">00조 입력 상태</span>
+                        <h3 id="student-session-indicator" class="text-xl font-black text-slate-900 mt-2">정답률 입력 표 (1회차)</h3>
                     </div>
-                    <button onclick="exitGroupInput()" class="text-rose-500 hover:text-rose-700 font-bold text-xs flex items-center space-x-1 bg-rose-50 px-2.5 py-1.5 rounded-lg transition-colors">
-                        <i class="fa-solid fa-arrow-right-to-bracket"></i> <span>조 이름 변경</span>
+                    <button onclick="exitGroupInput()" class="text-rose-500 font-bold text-xs bg-rose-50 px-3 py-2 rounded-lg">
+                        조 이름 변경
                     </button>
                 </div>
 
-                <!-- 상단 조별 예측 평균 점수 기입창 (큼직하게 확대) -->
                 <div class="bg-indigo-50/60 border border-indigo-100 p-5 rounded-2xl space-y-2">
-                    <label class="block text-md font-extrabold text-slate-900">
-                        <i class="fa-solid fa-calculator text-indigo-600 mr-1.5"></i>우리 조가 예측한 [전체 평균 점수]
+                    <label class="block text-lg font-extrabold text-slate-900">
+                        <i class="fa-solid fa-calculator text-indigo-600 mr-1.5"></i>우리 조 예측 [전체 평균]
                     </label>
-                    <p class="text-[11px] text-slate-400">소수점 첫째 자리까지 입력 가능합니다. (예: 78.5)</p>
-                    <div class="relative max-w-xs">
-                        <input type="number" id="input-student-avg" step="0.1" placeholder="0.0" class="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-indigo-500 font-black text-xl text-indigo-700 text-center shadow-sm">
+                    <div class="relative">
+                        <input type="number" id="input-student-avg" step="0.1" placeholder="예: 85.5" class="w-full px-4 py-4 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-indigo-500 font-black text-2xl text-indigo-700 text-center shadow-sm">
                         <span class="absolute inset-y-0 right-4 flex items-center font-bold text-slate-400">점</span>
                     </div>
                 </div>
 
-                <!-- 요구사항: 세로로 쭉 입력하게 표 형식 마크업 빌드 -->
                 <div class="space-y-3">
-                    <h4 class="text-sm font-bold text-slate-700 flex items-center px-0.5">
-                        <i class="fa-solid fa-list-check text-indigo-600 mr-1.5"></i>각 문항별 예측 정답률 세로 입력 표
+                    <h4 class="text-md font-bold text-slate-700">
+                        <i class="fa-solid fa-list-check text-indigo-600 mr-1.5"></i>문항별 예측 정답률 입력 (%)
                     </h4>
-                    
                     <div class="overflow-hidden border border-slate-200 rounded-2xl shadow-inner bg-white">
                         <table class="w-full text-left border-collapse">
-                            <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold text-xs text-center">
+                            <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold text-sm text-center">
                                 <tr>
                                     <th class="px-4 py-3 w-1/3 border-r">문항 번호</th>
-                                    <th class="px-4 py-3 w-2/3">예측 정답률 입력 (%)</th>
+                                    <th class="px-4 py-3 w-2/3">예측 정답률 (%)</th>
                                 </tr>
                             </thead>
-                            <tbody id="student-questions-table-body" class="divide-y divide-slate-200 font-semibold text-center">
-                                <!-- JavaScript 루프를 통해 세로 폼 자동 고정 바인딩 -->
-                            </tbody>
+                            <tbody id="student-questions-table-body" class="divide-y divide-slate-200 font-semibold text-center"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- 전송 액션 단 -->
                 <div class="pt-2">
-                    <button onclick="submitStudentData()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 text-lg">
+                    <button onclick="submitStudentData()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-4 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 text-xl">
                         <i class="fa-solid fa-cloud-arrow-up"></i>
-                        <span>우리 조 데이터 제출하기</span>
+                        <span>데이터 구글 시트로 제출하기</span>
                     </button>
                 </div>
             </div>
@@ -266,108 +218,71 @@
 
     </main>
 
-    <!-- 핵심 프론트 로직 스크립트 엔진 개발 파트 -->
     <script>
+        // ==============================================================================
+        // ★★★ [필수 설정] 구글 스프레드시트 앱스 스크립트(GAS) 주소 ★★★
+        // 1. 여기에 선생님이 복사하신 구글 웹앱 URL을 반드시 따옴표 안에 붙여넣으세요!
+        // 2. 주소를 넣은 후 저장하고 깃허브에 업로드하시면 끝납니다.
+        // ==============================================================================
+        const GOOGLE_SHEET_URL = "여기에_구글_스크립트_주소를_넣어주세요";
+
+
         let appState = {
-            isTeacherMode: false,
-            teacherSubView: 'qr', // 'qr' or 'dash'
-            session: 1,
-            questionCount: 25,
-            gasUrl: '',
-            session1: { actualAvg: null, actualRates: {}, groups: {} },
-            session2: { actualAvg: null, actualRates: {}, groups: {} }
+            isTeacherMode: false, teacherSubView: 'qr', session: 1, questionCount: 25,
+            session1: { actualAvg: null, actualRates: {} },
+            session2: { actualAvg: null, actualRates: {} }
         };
 
+        // 데이터를 시트에서 불러와서 임시 저장할 곳
+        let fetchedGroupsData = {}; 
+
         window.addEventListener('DOMContentLoaded', () => {
-            // URL 파라미터 파싱 검사 (?mode=teacher 유무 식별 아키텍처)
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('mode') === 'teacher') {
-                appState.isTeacherMode = true;
-            }
+            if (urlParams.get('mode') === 'teacher') appState.isTeacherMode = true;
 
-            // 로컬 스토리지 캐시 스토리지 연동 복구 복원 단
-            const cached = localStorage.getItem('LECTURE_APP_V4_STATE');
-            if (cached) {
-                try {
-                    const parsed = JSON.parse(cached);
-                    appState.session1 = parsed.session1 || appState.session1;
-                    appState.session2 = parsed.session2 || appState.session2;
-                    appState.questionCount = parsed.questionCount || 25;
-                    appState.gasUrl = parsed.gasUrl || '';
-                    document.getElementById('config-q-count').value = appState.questionCount;
-                    document.getElementById('config-gas-url').value = appState.gasUrl;
-                } catch(e) { console.error(e); }
-            }
-
-            // 실시간 QR 코드 타겟 URL 역추적 추적 가공 (학생들이 스캔시 ?mode=teacher 가 없는 클린 순수 주소로 유입 유도 매커니즘)
             const cleanUrl = window.location.origin + window.location.pathname;
             document.getElementById('mega-url-display').innerText = cleanUrl;
             document.getElementById('mega-qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(cleanUrl)}`;
 
-            // 역할 필터 마스킹 라우팅 디스패처 가동
             initRoleRoutingView();
         });
 
-        function saveToCache() {
-            localStorage.setItem('LECTURE_APP_V4_STATE', JSON.stringify({
-                session1: appState.session1, session2: appState.session2,
-                questionCount: appState.questionCount, gasUrl: appState.gasUrl
-            }));
-        }
-
-        // 라우팅 스위치 컨트롤 타워
         function initRoleRoutingView() {
-            const studentSection = document.getElementById('view-student');
-            const teacherHeader = document.getElementById('teacher-header');
-            const teacherQrSection = document.getElementById('view-teacher-qr');
-            const teacherDashSection = document.getElementById('view-teacher-dashboard');
-
             if (appState.isTeacherMode) {
-                // 강사 진입 시 -> 탭 노출하고 첫화면 대형 QR 안내판 활성화, 학생창 영구 은닉
-                teacherHeader.classList.remove('hidden');
-                studentSection.classList.add('hidden');
+                document.getElementById('teacher-header').classList.remove('hidden');
+                document.getElementById('view-student').classList.add('hidden');
                 switchTeacherSubView('qr');
             } else {
-                // 학생 진입 시 -> 강사 모듈 완전 봉인 파기 처리, 오직 학생 로그인폼만 제공
-                teacherHeader.classList.add('hidden');
-                teacherQrSection.classList.add('hidden');
-                teacherDashSection.classList.add('hidden');
-                studentSection.classList.remove('hidden');
-                
-                const activeGroup = localStorage.getItem('STUDENT_ACTIVE_GROUP_V4');
-                if (activeGroup) { startGroupInput(); } else { exitGroupInput(); }
+                document.getElementById('teacher-header').classList.add('hidden');
+                document.getElementById('view-teacher-qr').classList.add('hidden');
+                document.getElementById('view-teacher-dashboard').classList.add('hidden');
+                document.getElementById('view-student').classList.remove('hidden');
             }
         }
 
-        // 강사용 서브 뷰 토글 인터랙션
         function switchTeacherSubView(subView) {
             appState.teacherSubView = subView;
-            const tabQr = document.getElementById('tab-qr');
-            const tabDash = document.getElementById('tab-dash');
-            const viewQr = document.getElementById('view-teacher-qr');
-            const viewDash = document.getElementById('view-teacher-dashboard');
-
             if (subView === 'qr') {
-                tabQr.className = "px-4 py-1.5 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm";
-                tabDash.className = "px-4 py-1.5 text-xs font-bold rounded-lg text-slate-600 ml-1";
-                viewQr.classList.remove('hidden');
-                viewDash.classList.add('hidden');
+                document.getElementById('tab-qr').className = "px-4 py-2 text-sm font-bold rounded-lg bg-white text-indigo-600 shadow-sm";
+                document.getElementById('tab-dash').className = "px-4 py-2 text-sm font-bold rounded-lg text-slate-600 ml-1";
+                document.getElementById('view-teacher-qr').classList.remove('hidden');
+                document.getElementById('view-teacher-dashboard').classList.add('hidden');
             } else {
-                tabDash.className = "px-4 py-1.5 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm";
-                tabQr.className = "px-4 py-1.5 text-xs font-bold rounded-lg text-slate-600 ml-1";
-                viewDash.classList.remove('hidden');
-                viewQr.classList.add('hidden');
+                document.getElementById('tab-dash').className = "px-4 py-2 text-sm font-bold rounded-lg bg-white text-indigo-600 shadow-sm";
+                document.getElementById('tab-qr').className = "px-4 py-2 text-sm font-bold rounded-lg text-slate-600 ml-1";
+                document.getElementById('view-teacher-dashboard').classList.remove('hidden');
+                document.getElementById('view-teacher-qr').classList.add('hidden');
                 loadTeacherDashboardDataInputs();
             }
         }
 
-        // 비밀번호 게이트 락 프롬프트 매커니즘
+        // 아주 확실하게 동작하는 비밀번호 창
         function promptTeacherPassword() {
-            const pw = prompt("대시보드 관리자 비밀번호를 입력해 주세요.\n(초기 기본 비밀번호: 1234)");
+            const pw = prompt("대시보드 관리자 비밀번호를 입력해 주세요.\n(기본 비밀번호: 1234)");
             if (pw === "1234") {
                 switchTeacherSubView('dash');
             } else if (pw !== null) {
-                alert("비밀번호가 올바르지 않습니다.");
+                alert("비밀번호가 틀렸습니다.");
             }
         }
 
@@ -375,52 +290,39 @@
             let currentVal = appState.questionCount + delta;
             if (currentVal < 1) currentVal = 1;
             if (currentVal > 100) currentVal = 100;
-
             appState.questionCount = currentVal;
             document.getElementById('config-q-count').value = currentVal;
-
-            saveToCache();
             refreshDynamicTableForms();
         }
 
-        // 요구사항: 시원하고 큼직한 표 형식 세로 입력 리렌더러 파트 고도화 설계
         function refreshDynamicTableForms() {
             const sTbody = document.getElementById('student-questions-table-body');
             const tTbody = document.getElementById('teacher-questions-table-body');
-            
-            sTbody.innerHTML = '';
-            tTbody.innerHTML = '';
-
+            sTbody.innerHTML = ''; tTbody.innerHTML = '';
             const sessionKey = 'session' + appState.session;
-            const activeGroup = localStorage.getItem('STUDENT_ACTIVE_GROUP_V4') || '';
 
             for (let i = 1; i <= appState.questionCount; i++) {
-                // 학생 세로 표 바인딩
-                const sVal = (activeGroup && appState[sessionKey].groups[activeGroup]) ? 
-                             (appState[sessionKey].groups[activeGroup].rates[i] ?? '') : '';
+                // 학생 입력 표 생성
                 const sTr = document.createElement('tr');
-                sTr.className = "hover:bg-slate-50/80 transition-colors";
                 sTr.innerHTML = `
-                    <td class="px-4 py-4 font-black text-slate-600 text-base bg-slate-50/50 border-r border-slate-200">${i}번 문항</td>
-                    <td class="px-6 py-2.5 flex justify-center">
+                    <td class="px-4 py-4 font-black text-slate-600 text-lg bg-slate-50/50 border-r border-slate-200">${i}번</td>
+                    <td class="px-6 py-2 flex justify-center">
                         <div class="relative w-full max-w-xs">
-                            <input type="number" id="s-q-${i}" min="0" max="100" value="${sVal}" placeholder="0 ~ 100" class="w-full text-center py-3 px-4 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-black text-2xl text-slate-800 tracking-wide transition-all shadow-sm">
-                            <span class="absolute inset-y-0 right-4 flex items-center font-black text-slate-400 text-lg pointer-events-none">%</span>
+                            <input type="number" id="s-q-${i}" min="0" max="100" placeholder="입력" class="w-full text-center py-4 px-4 border-2 border-slate-300 rounded-xl focus:border-indigo-500 font-black text-2xl">
+                            <span class="absolute inset-y-0 right-4 flex items-center font-black text-slate-400">%</span>
                         </div>
                     </td>
                 `;
                 sTbody.appendChild(sTr);
 
-                // 강사 세로 표 바인딩
+                // 강사 기준표 생성
                 const tVal = appState[sessionKey].actualRates[i] ?? '';
                 const tTr = document.createElement('tr');
-                tTr.className = "hover:bg-slate-50 transition-colors";
                 tTr.innerHTML = `
-                    <td class="p-2 border-r font-bold text-amber-800 bg-amber-50/20">${i}번 문항</td>
+                    <td class="p-2 border-r font-bold text-amber-800 bg-amber-50/20">${i}번</td>
                     <td class="p-1.5 flex justify-center">
                         <div class="relative w-full max-w-xxs">
-                            <input type="number" id="t-q-${i}" min="0" max="100" value="${tVal}" onchange="updateTeacherRateElement(${i}, this.value)" class="w-full text-center py-1.5 border border-slate-300 rounded-lg text-sm font-bold text-amber-900">
-                            <span class="absolute inset-y-0 right-3 flex items-center text-xs font-bold text-slate-400 pointer-events-none">%</span>
+                            <input type="number" id="t-q-${i}" min="0" max="100" value="${tVal}" onchange="updateTeacherRateElement(${i}, this.value)" class="w-full text-center py-1.5 border border-slate-300 rounded-lg text-sm font-bold">
                         </div>
                     </td>
                 `;
@@ -438,141 +340,141 @@
         function updateTeacherRateElement(qNum, value) {
             const sessionKey = 'session' + appState.session;
             appState[sessionKey].actualRates[qNum] = value !== '' ? parseFloat(value) : null;
-            saveToCache();
         }
 
         document.getElementById('teacher-actual-avg').addEventListener('input', (e) => {
-            const sessionKey = 'session' + appState.session;
-            appState[sessionKey].actualAvg = e.target.value !== '' ? parseFloat(e.target.value) : null;
-            saveToCache();
+            appState['session' + appState.session].actualAvg = e.target.value !== '' ? parseFloat(e.target.value) : null;
         });
 
-        // 세션 회차 변경 트리거 가동
         function changeSession(sNum) {
             appState.session = sNum;
-            const b1 = document.getElementById('btn-sess-1');
-            const b2 = document.getElementById('btn-sess-2');
-
-            if (sNum === 1) {
-                b1.className = "py-2 text-xs font-bold border rounded-lg transition-all border-indigo-600 bg-indigo-50 text-indigo-700";
-                b2.className = "py-2 text-xs font-bold border rounded-lg transition-all border-slate-200 text-slate-600 hover:bg-slate-50";
-            } else {
-                b2.className = "py-2 text-xs font-bold border rounded-lg transition-all border-indigo-600 bg-indigo-50 text-indigo-700";
-                b1.className = "py-2 text-xs font-bold border rounded-lg transition-all border-slate-200 text-slate-600 hover:bg-slate-50";
-            }
+            document.getElementById('btn-sess-1').className = sNum === 1 ? "py-2 text-xs font-bold border rounded-lg border-indigo-600 bg-indigo-50 text-indigo-700" : "py-2 text-xs font-bold border rounded-lg border-slate-200 text-slate-600";
+            document.getElementById('btn-sess-2').className = sNum === 2 ? "py-2 text-xs font-bold border rounded-lg border-indigo-600 bg-indigo-50 text-indigo-700" : "py-2 text-xs font-bold border rounded-lg border-slate-200 text-slate-600";
             loadTeacherDashboardDataInputs();
+            document.getElementById('comparison-results-section').classList.add('hidden'); // 세션 변경 시 표 숨김
         }
 
-        // 학생 로그인 인풋 제어
         function startGroupInput() {
-            const inputVal = document.getElementById('student-group-name').value.trim();
-            let activeGroup = inputVal || localStorage.getItem('STUDENT_ACTIVE_GROUP_V4') || '';
-
-            if (!activeGroup) {
-                alert('접속 및 입력을 위해 소속 조 이름을 입력해 주세요.');
-                return;
-            }
-
-            localStorage.setItem('STUDENT_ACTIVE_GROUP_V4', activeGroup);
-            document.getElementById('student-group-name').value = activeGroup;
-            document.getElementById('active-group-badge').innerText = `${activeGroup} 전용 입력 상태`;
-            document.getElementById('student-session-indicator').innerText = `문항 정답률 입력 표 (${appState.session}회차 질문)`;
-
+            const groupName = document.getElementById('student-group-name').value.trim();
+            if (!groupName) { alert('조 이름을 입력해 주세요!'); return; }
+            document.getElementById('active-group-badge').innerText = `${groupName} 입력 중`;
+            document.getElementById('student-session-indicator').innerText = `정답률 표 (${appState.session}회차)`;
             document.getElementById('student-login-card').classList.add('hidden');
             document.getElementById('student-input-form').classList.remove('hidden');
-
-            const sessionKey = 'session' + appState.session;
-            const groupDataset = appState[sessionKey].groups[activeGroup];
-            document.getElementById('input-student-avg').value = groupDataset ? (groupDataset.avgScore ?? '') : '';
-            
             refreshDynamicTableForms();
         }
 
         function exitGroupInput() {
-            localStorage.removeItem('STUDENT_ACTIVE_GROUP_V4');
-            document.getElementById('student-group-name').value = '';
             document.getElementById('student-login-card').classList.remove('hidden');
             document.getElementById('student-input-form').classList.add('hidden');
         }
 
+        // [중요] 학생 데이터 제출 함수 (하드코딩된 주소로 발송)
         function submitStudentData() {
-            const activeGroup = localStorage.getItem('STUDENT_ACTIVE_GROUP_V4');
-            if (!activeGroup) { alert('인증 오류'); exitGroupInput(); return; }
-
+            const groupName = document.getElementById('active-group-badge').innerText.replace(' 입력 중', '');
             const avgInput = document.getElementById('input-student-avg').value;
-            if (!avgInput) { alert('상단 조별 예측 평균 점수를 입력해야 데이터를 제출할 수 있습니다.'); return; }
-
-            const sessionKey = 'session' + appState.session;
-            if (!appState[sessionKey].groups[activeGroup]) {
-                appState[sessionKey].groups[activeGroup] = { avgScore: null, rates: {} };
+            
+            if (!avgInput) { alert('전체 평균 점수를 입력해 주세요.'); return; }
+            if (GOOGLE_SHEET_URL === "여기에_구글_스크립트_주소를_넣어주세요" || GOOGLE_SHEET_URL === "") {
+                alert("강사님이 아직 구글 시트 주소를 시스템 코드에 세팅하지 않았습니다.
+(이 메시지가 보인다면 강사님께 문의하세요.)");
+                return;
             }
 
-            appState[sessionKey].groups[activeGroup].avgScore = parseFloat(avgInput);
-
+            const ratesData = {};
             for (let i = 1; i <= appState.questionCount; i++) {
                 const qIn = document.getElementById(`s-q-${i}`);
-                appState[sessionKey].groups[activeGroup].rates[i] = qIn && qIn.value !== '' ? parseFloat(qIn.value) : 0;
+                ratesData[i] = qIn && qIn.value !== '' ? parseFloat(qIn.value) : 0;
             }
 
-            saveToCache();
+            const payload = {
+                session: appState.session,
+                groupName: groupName,
+                avgScore: parseFloat(avgInput),
+                rates: ratesData
+            };
 
-            // 외부 확장 연동용 GAS 어댑터 파트 (주소 기입시 묵시적 전송 가동)
-            const gasUrlField = document.getElementById('config-gas-url')?.value.trim() || appState.gasUrl;
-            if (gasUrlField) {
-                appState.gasUrl = gasUrlField; saveToCache();
-                fetch(gasUrlField, {
-                    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'submit', session: appState.session, groupName: activeGroup, avgScore: parseFloat(avgInput), rates: appState[sessionKey].groups[activeGroup].rates })
-                }).then(() => alert(`[${activeGroup}] 구글 통합 백엔드 시트 동기화 완료.`))
-                  .catch(() => alert('제출 성공 (로컬 세션 보존)'));
-            } else {
-                alert(`[${activeGroup}] 조의 데이터가 성공적으로 임시 집계 서버에 기록되었습니다!\n강사님의 대시보드 화면을 확인하세요.`);
-            }
+            // GAS로 POST 요청 쏘기 (text/plain으로 보내야 CORS 통과함)
+            fetch(GOOGLE_SHEET_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === "success") {
+                    alert(`✅ 제출 완료! ${groupName} 데이터가 구글 시트에 기록되었습니다.`);
+                } else {
+                    alert("⚠️ 제출 오류: " + data.message);
+                }
+            })
+            .catch(error => {
+                alert("서버 연결에 실패했습니다. 구글 앱스 스크립트 주소가 정확한지, 배포 권한이 '모든 사용자'로 되어 있는지 확인하세요.");
+            });
         }
 
-        // 최종 데이터 비교 맵핑 테이블 엔진 빌더
-        function renderComparisonResults() {
+        // [중요] 강사가 시트에서 데이터를 불러와서 표를 그리는 함수
+        function fetchAndRenderComparison() {
+            if (GOOGLE_SHEET_URL === "여기에_구글_스크립트_주소를_넣어주세요" || GOOGLE_SHEET_URL === "") {
+                alert("구글 시트 URL이 HTML 코드에 설정되지 않았습니다.
+HTML 파일의 230번째 줄을 수정해 주세요.");
+                return;
+            }
+
+            // [로딩 표시 등 추가 가능]
+            fetch(`${GOOGLE_SHEET_URL}?session=${appState.session}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    fetchedGroupsData = data.groups;
+                    renderComparisonTable();
+                } else {
+                    alert("데이터 불러오기 실패");
+                }
+            })
+            .catch(e => alert("구글 시트에서 데이터를 가져오지 못했습니다. 주소와 권한(모든사용자)을 확인하세요."));
+        }
+
+        function renderComparisonTable() {
             const sessionKey = 'session' + appState.session;
             const currentSessionData = appState[sessionKey];
-            const groupList = Object.keys(currentSessionData.groups).sort();
+            const groupList = Object.keys(fetchedGroupsData).sort();
             
             if (groupList.length === 0) {
-                alert("아직 학생들이 입력하여 제출한 조별 데이터가 없습니다.\n[조별 입력] 상태에서 임의 데이터를 먼저 생성해 주세요.");
+                alert(`현재 시트에 저장된 ${appState.session}회차 학생 데이터가 없습니다.`);
                 return;
             }
 
             const rSection = document.getElementById('comparison-results-section');
             rSection.classList.remove('hidden');
 
-            document.getElementById('stat-actual-avg').innerText = currentSessionData.actualAvg !== null ? currentSessionData.actualAvg + '점' : '미정';
+            document.getElementById('stat-actual-avg').innerText = currentSessionData.actualAvg !== null ? currentSessionData.actualAvg + '점' : '미입력';
             
             let sumAvgScore = 0;
-            groupList.forEach(g => sumAvgScore += currentSessionData.groups[g].avgScore || 0);
+            groupList.forEach(g => sumAvgScore += fetchedGroupsData[g].avgScore || 0);
             document.getElementById('stat-groups-avg').innerText = (sumAvgScore / groupList.length).toFixed(1) + '점';
 
-            // 동적 헤더 열 구조 생성
             const hRow = document.getElementById('table-header-row');
             hRow.innerHTML = `
-                <th class="px-2 py-2 sticky left-0 bg-slate-100 border-r text-center w-20">문항</th>
-                <th class="px-2 py-2 bg-amber-100 text-amber-900 border-r text-center w-28">실제 정답률 (%)</th>
-                <th class="px-2 py-2 bg-indigo-50 text-indigo-900 border-r text-center w-28">조별 평균 (%)</th>
+                <th class="px-2 py-3 sticky left-0 bg-slate-100 border-r w-16 text-center">문항</th>
+                <th class="px-2 py-3 bg-amber-100 text-amber-900 border-r w-24 text-center">실제 (%)</th>
+                <th class="px-2 py-3 bg-indigo-50 text-indigo-900 border-r w-24 text-center">조별 평균 (%)</th>
             `;
             groupList.forEach(gName => {
-                hRow.innerHTML += `<th class="px-2 py-2 border-r text-center bg-slate-50 text-slate-700 text-[11px] font-bold">${gName}</th>`;
+                hRow.innerHTML += `<th class="px-2 py-3 border-r bg-slate-50 text-slate-700 text-xs font-bold">${gName}</th>`;
             });
 
-            // 행 데이터 렌더링 루프
             const tbody = document.getElementById('table-body-rows');
             tbody.innerHTML = '';
 
             for (let i = 1; i <= appState.questionCount; i++) {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition-colors border-b";
+                tr.className = "hover:bg-slate-50 border-b";
 
                 const actualRate = currentSessionData.actualRates[i] ?? null;
                 let qSum = 0, qCount = 0;
                 groupList.forEach(g => {
-                    const r = currentSessionData.groups[g].rates[i];
+                    const r = fetchedGroupsData[g].rates[i];
                     if (r !== undefined && r !== null) { qSum += r; qCount++; }
                 });
                 const qGroupAvg = qCount > 0 ? (qSum / qCount).toFixed(1) : null;
@@ -580,28 +482,27 @@
                 let rowHClass = '', alertIcon = '';
                 if (actualRate !== null && qGroupAvg !== null && Math.abs(actualRate - parseFloat(qGroupAvg)) >= 15) {
                     rowHClass = 'bg-rose-50 text-rose-900 font-extrabold';
-                    alertIcon = '<span class="text-rose-500 ml-0.5"><i class="fa-solid fa-triangle-exclamation"></i></span>';
+                    alertIcon = '<span class="text-rose-500 block text-[10px] mt-1"><i class="fa-solid fa-triangle-exclamation"></i> 오차 15%+</span>';
                 }
 
                 let rowHtml = `
-                    <td class="px-2 py-2 sticky left-0 bg-slate-100/90 border-r font-bold ${rowHClass}">${i}번 ${alertIcon}</td>
-                    <td class="px-2 py-2 border-r text-amber-800 bg-amber-50/30 font-black">${actualRate !== null ? actualRate + '%' : '-'}</td>
-                    <td class="px-2 py-2 border-r text-indigo-600 bg-indigo-50/30 font-black">${qGroupAvg !== null ? qGroupAvg + '%' : '-'}</td>
+                    <td class="px-2 py-3 sticky left-0 bg-slate-100/90 border-r font-bold ${rowHClass}">${i}번 ${alertIcon}</td>
+                    <td class="px-2 py-3 border-r text-amber-800 bg-amber-50/30 font-black text-sm">${actualRate !== null ? actualRate + '%' : '-'}</td>
+                    <td class="px-2 py-3 border-r text-indigo-600 bg-indigo-50/30 font-black text-sm">${qGroupAvg !== null ? qGroupAvg + '%' : '-'}</td>
                 `;
 
                 groupList.forEach(g => {
-                    const groupRate = currentSessionData.groups[g].rates[i];
+                    const groupRate = fetchedGroupsData[g].rates[i];
                     let cellStyle = 'text-slate-600 font-medium';
                     if (actualRate !== null && groupRate !== undefined && groupRate !== null && Math.abs(actualRate - groupRate) >= 15) {
                         cellStyle = 'bg-rose-100/60 text-rose-800 font-black';
                     }
-                    rowHtml += `<td class="px-2 py-2 border-r ${cellStyle}">${groupRate !== undefined && groupRate !== null ? groupRate + '%' : '-'}</td>`;
+                    rowHtml += `<td class="px-2 py-3 border-r ${cellStyle}">${groupRate !== undefined && groupRate !== null ? groupRate + '%' : '-'}</td>`;
                 });
 
                 tr.innerHTML = rowHtml;
                 tbody.appendChild(tr);
             }
-
             rSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     </script>
