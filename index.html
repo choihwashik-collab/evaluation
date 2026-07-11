@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>실시간 강의 반응 수집 시스템 (v5.0)</title>
+    <title>실시간 강의 반응 수집 시스템 (최종 완성본)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -17,7 +17,7 @@
     <header id="teacher-header" class="hidden bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-2">
-                <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded">강사 모드 (v5.0)</span>
+                <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded">강사 모드 (최종)</span>
                 <span class="text-sm font-semibold text-slate-500">현재 세션: <span id="nav-session-num" class="text-indigo-600 font-bold">1</span>회차</span>
             </div>
             <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
@@ -220,12 +220,9 @@
 
     <script>
         // ==============================================================================
-        // ★★★ [필수 설정] 구글 스프레드시트 앱스 스크립트(GAS) 주소 ★★★
-        // 1. 여기에 선생님이 복사하신 구글 웹앱 URL을 반드시 따옴표 안에 붙여넣으세요!
-        // 2. 주소를 넣은 후 저장하고 깃허브에 업로드하시면 끝납니다.
+        // ★★★ [자동 기입 완료] 선생님께서 제공해주신 구글 스프레드시트 URL이 박혀있습니다! ★★★
         // ==============================================================================
-        const GOOGLE_SHEET_URL = "여기에_구글_스크립트_주소를_넣어주세요";
-
+        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbw7q5Kc-bm8Fq-EpK3NqRt420qk6JR4qjRIu_C7GGwZ6rjBeh_GcIWZi3yiWDwTjD_QLg/exec";
 
         let appState = {
             isTeacherMode: false, teacherSubView: 'qr', session: 1, questionCount: 25,
@@ -375,11 +372,6 @@
             const avgInput = document.getElementById('input-student-avg').value;
             
             if (!avgInput) { alert('전체 평균 점수를 입력해 주세요.'); return; }
-            if (GOOGLE_SHEET_URL === "여기에_구글_스크립트_주소를_넣어주세요" || GOOGLE_SHEET_URL === "") {
-                alert("강사님이 아직 구글 시트 주소를 시스템 코드에 세팅하지 않았습니다.
-(이 메시지가 보인다면 강사님께 문의하세요.)");
-                return;
-            }
 
             const ratesData = {};
             for (let i = 1; i <= appState.questionCount; i++) {
@@ -409,18 +401,12 @@
                 }
             })
             .catch(error => {
-                alert("서버 연결에 실패했습니다. 구글 앱스 스크립트 주소가 정확한지, 배포 권한이 '모든 사용자'로 되어 있는지 확인하세요.");
+                alert("서버 연결에 실패했습니다. 구글 앱스 스크립트 배포 권한이 '모든 사용자'로 되어 있는지 확인하세요.");
             });
         }
 
         // [중요] 강사가 시트에서 데이터를 불러와서 표를 그리는 함수
         function fetchAndRenderComparison() {
-            if (GOOGLE_SHEET_URL === "여기에_구글_스크립트_주소를_넣어주세요" || GOOGLE_SHEET_URL === "") {
-                alert("구글 시트 URL이 HTML 코드에 설정되지 않았습니다.
-HTML 파일의 230번째 줄을 수정해 주세요.");
-                return;
-            }
-
             // [로딩 표시 등 추가 가능]
             fetch(`${GOOGLE_SHEET_URL}?session=${appState.session}`)
             .then(res => res.json())
@@ -432,7 +418,7 @@ HTML 파일의 230번째 줄을 수정해 주세요.");
                     alert("데이터 불러오기 실패");
                 }
             })
-            .catch(e => alert("구글 시트에서 데이터를 가져오지 못했습니다. 주소와 권한(모든사용자)을 확인하세요."));
+            .catch(e => alert("구글 시트에서 데이터를 가져오지 못했습니다. 배포 권한(모든사용자)을 확인하세요."));
         }
 
         function renderComparisonTable() {
