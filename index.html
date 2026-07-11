@@ -38,6 +38,7 @@
             <div class="max-w-2xl mx-auto bg-white border-2 border-indigo-100 p-8 rounded-3xl shadow-xl space-y-6">
                 <div class="space-y-2">
                     <h2 class="text-3xl font-black text-slate-900 tracking-tight">스마트폰으로 QR 코드를 스캔하세요!</h2>
+                    <p id="qr-session-guide" class="text-indigo-600 font-bold text-lg">현재 <span id="qr-session-text">1</span>회차 질문 접속용 QR입니다.</p>
                 </div>
                 <div class="bg-slate-50 p-6 border border-slate-100 rounded-2xl inline-block mx-auto shadow-inner">
                     <img id="mega-qr-code-img" src="" alt="접속 QR코드" class="w-64 h-64 mx-auto bg-white border-2 border-slate-200 p-2 rounded-xl shadow-sm">
@@ -76,7 +77,7 @@
                     </div>
 
                     <div class="space-y-2">
-                        <label class="block text-xs font-bold text-slate-600">진행 회차 (결과도 회차별로 불러옵니다)</label>
+                        <label class="block text-xs font-bold text-slate-600">진행 회차 (클릭 시 QR코드 자동 변경)</label>
                         <div class="grid grid-cols-2 gap-1.5">
                             <button id="btn-sess-1" onclick="changeSession(1)" class="py-2 text-xs font-bold border rounded-lg transition-all border-indigo-600 bg-indigo-50 text-indigo-700">1회차</button>
                             <button id="btn-sess-2" onclick="changeSession(2)" class="py-2 text-xs font-bold border rounded-lg transition-all border-slate-200 text-slate-600">2회차</button>
@@ -160,6 +161,7 @@
                         <i class="fa-solid fa-users text-3xl"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-slate-900">조 이름 입력</h3>
+                    <p id="student-login-session-text" class="text-sm font-bold text-indigo-600 mt-2 bg-indigo-50 inline-block px-3 py-1 rounded-full">현재 1회차 질문 접속됨</p>
                 </div>
                 <div class="space-y-4">
                     <input type="text" id="student-group-name" placeholder="예: 3조" class="w-full px-4 py-4 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 text-xl font-bold text-center">
@@ -219,9 +221,7 @@
     </main>
 
     <script>
-        // ==============================================================================
-        // ★★★ [자동 기입 완료] 선생님께서 제공해주신 구글 스프레드시트 URL이 박혀있습니다! ★★★
-        // ==============================================================================
+        // 선생님의 구글 스프레드시트 URL 고정 세팅 완료
         const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbw7q5Kc-bm8Fq-EpK3NqRt420qk6JR4qjRIu_C7GGwZ6rjBeh_GcIWZi3yiWDwTjD_QLg/exec";
 
         let appState = {
@@ -230,19 +230,30 @@
             session2: { actualAvg: null, actualRates: {} }
         };
 
-        // 데이터를 시트에서 불러와서 임시 저장할 곳
         let fetchedGroupsData = {}; 
 
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('mode') === 'teacher') appState.isTeacherMode = true;
 
-            const cleanUrl = window.location.origin + window.location.pathname;
-            document.getElementById('mega-url-display').innerText = cleanUrl;
-            document.getElementById('mega-qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(cleanUrl)}`;
+            // [핵심 변경사항] URL 파라미터에서 session 번호를 감지하여 학생 화면의 세션을 자동으로 맞춰줍니다.
+            const sessionParam = urlParams.get('session');
+            if (sessionParam) {
+                appState.session = parseInt(sessionParam);
+                document.getElementById('student-login-session-text').innerText = `현재 ${appState.session}회차 질문 접속됨`;
+            }
 
+            updateQRCodeDisplay();
             initRoleRoutingView();
         });
+
+        // [핵심 변경사항] 세션이 바뀔 때마다 QR 코드의 연결 주소를 다르게(1회차, 2회차) 생성합니다.
+        function updateQRCodeDisplay() {
+            const cleanUrl = window.location.origin + window.location.pathname + "?session=" + appState.session;
+            document.getElementById('mega-url-display').innerText = cleanUrl;
+            document.getElementById('mega-qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(cleanUrl)}`;
+            document.getElementById('qr-session-text').innerText = appState.session;
+        }
 
         function initRoleRoutingView() {
             if (appState.isTeacherMode) {
@@ -273,7 +284,6 @@
             }
         }
 
-        // 아주 확실하게 동작하는 비밀번호 창
         function promptTeacherPassword() {
             const pw = prompt("대시보드 관리자 비밀번호를 입력해 주세요.\n(기본 비밀번호: 1234)");
             if (pw === "1234") {
@@ -299,7 +309,6 @@
             const sessionKey = 'session' + appState.session;
 
             for (let i = 1; i <= appState.questionCount; i++) {
-                // 학생 입력 표 생성
                 const sTr = document.createElement('tr');
                 sTr.innerHTML = `
                     <td class="px-4 py-4 font-black text-slate-600 text-lg bg-slate-50/50 border-r border-slate-200">${i}번</td>
@@ -312,7 +321,6 @@
                 `;
                 sTbody.appendChild(sTr);
 
-                // 강사 기준표 생성
                 const tVal = appState[sessionKey].actualRates[i] ?? '';
                 const tTr = document.createElement('tr');
                 tTr.innerHTML = `
@@ -343,12 +351,15 @@
             appState['session' + appState.session].actualAvg = e.target.value !== '' ? parseFloat(e.target.value) : null;
         });
 
+        // [핵심 변경사항] 대시보드에서 세션을 바꾸면, QR 코드도 그 회차에 맞게 자동으로 다시 그려집니다.
         function changeSession(sNum) {
             appState.session = sNum;
             document.getElementById('btn-sess-1').className = sNum === 1 ? "py-2 text-xs font-bold border rounded-lg border-indigo-600 bg-indigo-50 text-indigo-700" : "py-2 text-xs font-bold border rounded-lg border-slate-200 text-slate-600";
             document.getElementById('btn-sess-2').className = sNum === 2 ? "py-2 text-xs font-bold border rounded-lg border-indigo-600 bg-indigo-50 text-indigo-700" : "py-2 text-xs font-bold border rounded-lg border-slate-200 text-slate-600";
+            
+            updateQRCodeDisplay(); // 회차 변경 시 QR 코드 즉각 갱신
             loadTeacherDashboardDataInputs();
-            document.getElementById('comparison-results-section').classList.add('hidden'); // 세션 변경 시 표 숨김
+            document.getElementById('comparison-results-section').classList.add('hidden');
         }
 
         function startGroupInput() {
@@ -366,7 +377,6 @@
             document.getElementById('student-input-form').classList.add('hidden');
         }
 
-        // [중요] 학생 데이터 제출 함수 (하드코딩된 주소로 발송)
         function submitStudentData() {
             const groupName = document.getElementById('active-group-badge').innerText.replace(' 입력 중', '');
             const avgInput = document.getElementById('input-student-avg').value;
@@ -386,7 +396,6 @@
                 rates: ratesData
             };
 
-            // GAS로 POST 요청 쏘기 (text/plain으로 보내야 CORS 통과함)
             fetch(GOOGLE_SHEET_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -395,19 +404,17 @@
             .then(response => response.json())
             .then(data => {
                 if(data.status === "success") {
-                    alert(`✅ 제출 완료! ${groupName} 데이터가 구글 시트에 기록되었습니다.`);
+                    alert(`✅ 제출 완료! ${groupName} 데이터가 ${appState.session}회차로 시트에 기록되었습니다.`);
                 } else {
                     alert("⚠️ 제출 오류: " + data.message);
                 }
             })
             .catch(error => {
-                alert("서버 연결에 실패했습니다. 구글 앱스 스크립트 배포 권한이 '모든 사용자'로 되어 있는지 확인하세요.");
+                alert("서버 연결에 실패했습니다.");
             });
         }
 
-        // [중요] 강사가 시트에서 데이터를 불러와서 표를 그리는 함수
         function fetchAndRenderComparison() {
-            // [로딩 표시 등 추가 가능]
             fetch(`${GOOGLE_SHEET_URL}?session=${appState.session}`)
             .then(res => res.json())
             .then(data => {
@@ -418,7 +425,7 @@
                     alert("데이터 불러오기 실패");
                 }
             })
-            .catch(e => alert("구글 시트에서 데이터를 가져오지 못했습니다. 배포 권한(모든사용자)을 확인하세요."));
+            .catch(e => alert("데이터를 가져오지 못했습니다."));
         }
 
         function renderComparisonTable() {
